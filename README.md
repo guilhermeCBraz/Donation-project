@@ -46,7 +46,7 @@ Sistema completo de troca e doação de alimentos conectando doadores com ONGs q
 
 1. Clone o repositório
 ```bash
-cd /home/guilherme/Documentos/programacao/Donation-project
+https://github.com/guilhermeCBraz/Donation-project.git
 ```
 
 2. Crie e ative o ambiente virtual (já criado)
