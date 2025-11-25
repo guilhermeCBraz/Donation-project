@@ -1,0 +1,400 @@
+{% extends "core/base.html" %}
+
+{% block title %}Dashboard Administrativo - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1>Dashboard Administrativo</h1>
+
+  <div class="stats-grid">
+    <div class="stats-card">
+      <div class="stats-icon">👥</div>
+      <div class="stats-content">
+        <h3>Total de Usuários</h3>
+        <p class="stats-number">{{ stats.total_usuarios }}</p>
+        <small>{{ stats.total_clientes }} clientes | {{ stats.total_ongs }} ONGs</small>
+      </div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-icon">🎁</div>
+      <div class="stats-content">
+        <h3>Total de Doações</h3>
+        <p class="stats-number">{{ stats.total_doacoes }}</p>
+        <small>{{ stats.doacoes_pendentes }} pendentes | {{ stats.doacoes_entregues }} entregues</small>
+      </div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-icon">🍎</div>
+      <div class="stats-content">
+        <h3>Alimentos Cadastrados</h3>
+        <p class="stats-number">{{ stats.total_alimentos }}</p>
+        <small>{{ stats.categorias_alimentos }} categorias</small>
+      </div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-icon">📊</div>
+      <div class="stats-content">
+        <h3>Necessidades Ativas</h3>
+        <p class="stats-number">{{ stats.necessidades_ativas }}</p>
+        <small>{{ stats.total_necessidades }} no total</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- Status das Doações -->
+    <div class="dashboard-card">
+      <h2>Status das Doações</h2>
+      <div class="status-chart">
+        <div class="status-item">
+          <span class="status-label">Pendente</span>
+          <div class="status-bar">
+            <div class="status-fill status-pendente"
+              style="width: {% widthratio stats.doacoes_pendentes stats.total_doacoes 100 %}%"></div>
+          </div>
+          <span class="status-value">{{ stats.doacoes_pendentes }}</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Confirmada</span>
+          <div class="status-bar">
+            <div class="status-fill status-confirmada"
+              style="width: {% widthratio stats.doacoes_confirmadas stats.total_doacoes 100 %}%"></div>
+          </div>
+          <span class="status-value">{{ stats.doacoes_confirmadas }}</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Em Trânsito</span>
+          <div class="status-bar">
+            <div class="status-fill status-transito"
+              style="width: {% widthratio stats.doacoes_em_transito stats.total_doacoes 100 %}%"></div>
+          </div>
+          <span class="status-value">{{ stats.doacoes_em_transito }}</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Entregue</span>
+          <div class="status-bar">
+            <div class="status-fill status-entregue"
+              style="width: {% widthratio stats.doacoes_entregues stats.total_doacoes 100 %}%"></div>
+          </div>
+          <span class="status-value">{{ stats.doacoes_entregues }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top ONGs -->
+    <div class="dashboard-card">
+      <h2>ONGs com Mais Doações Recebidas</h2>
+      {% if top_ongs %}
+      <div class="top-list">
+        {% for ong in top_ongs %}
+        <div class="top-item">
+          <div class="top-rank">{{ forloop.counter }}</div>
+          <div class="top-info">
+            <strong>{{ ong.ong__nome }}</strong>
+            <small>{{ ong.total_doacoes }} doações</small>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="empty-message">Nenhuma doação recebida ainda.</p>
+      {% endif %}
+    </div>
+
+    <!-- Top Doadores -->
+    <div class="dashboard-card">
+      <h2>Maiores Doadores</h2>
+      {% if top_doadores %}
+      <div class="top-list">
+        {% for doador in top_doadores %}
+        <div class="top-item">
+          <div class="top-rank">{{ forloop.counter }}</div>
+          <div class="top-info">
+            <strong>{{ doador.doador__first_name }} {{ doador.doador__last_name }}</strong>
+            <small>{{ doador.total_doacoes }} doações</small>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="empty-message">Nenhuma doação realizada ainda.</p>
+      {% endif %}
+    </div>
+
+    <!-- Alimentos Mais Doados -->
+    <div class="dashboard-card">
+      <h2>Alimentos Mais Doados</h2>
+      {% if alimentos_mais_doados %}
+      <div class="top-list">
+        {% for item in alimentos_mais_doados %}
+        <div class="top-item">
+          <div class="top-rank">{{ forloop.counter }}</div>
+          <div class="top-info">
+            <strong>{{ item.alimento__nome }}</strong>
+            <small>{{ item.total_quantidade|floatformat:2 }} {{ item.alimento__unidade_medida }}</small>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="empty-message">Nenhuma doação realizada ainda.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Doações Recentes -->
+  <div class="dashboard-card full-width">
+    <h2>Doações Recentes</h2>
+    {% if doacoes_recentes %}
+    <table class="doacoes-table">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Doador</th>
+          <th>ONG</th>
+          <th>Alimento</th>
+          <th>Quantidade</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doacao in doacoes_recentes %}
+        <tr>
+          <td>{{ doacao.data_doacao|date:"d/m/Y H:i" }}</td>
+          <td>{{ doacao.doador.first_name }} {{ doacao.doador.last_name }}</td>
+          <td>{{ doacao.necessidade.ong.nome }}</td>
+          <td>{{ doacao.alimento.nome }}</td>
+          <td>{{ doacao.quantidade|floatformat:2 }} {{ doacao.alimento.unidade_medida }}</td>
+          <td>
+            <span class="status-badge status-{{ doacao.status }}">
+              {% if doacao.status == 'pendente' %}Pendente
+              {% elif doacao.status == 'confirmada' %}Confirmada
+              {% elif doacao.status == 'em_transito' %}Em Trânsito
+              {% else %}Entregue{% endif %}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty-message">Nenhuma doação registrada ainda.</p>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .stats-card {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .stats-icon {
+    font-size: 48px;
+  }
+
+  .stats-content h3 {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+    color: #666;
+    font-weight: normal;
+  }
+
+  .stats-number {
+    font-size: 32px;
+    font-weight: bold;
+    color: #4CAF50;
+    margin: 0 0 5px 0;
+  }
+
+  .stats-content small {
+    color: #999;
+    font-size: 12px;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .dashboard-card {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .dashboard-card.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .dashboard-card h2 {
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    color: #333;
+  }
+
+  .status-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .status-item {
+    display: grid;
+    grid-template-columns: 100px 1fr 60px;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .status-label {
+    font-size: 14px;
+    color: #666;
+  }
+
+  .status-bar {
+    height: 24px;
+    background: #f0f0f0;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .status-fill {
+    height: 100%;
+    transition: width 0.3s;
+  }
+
+  .status-pendente {
+    background: linear-gradient(90deg, #FFC107, #FFD54F);
+  }
+
+  .status-confirmada {
+    background: linear-gradient(90deg, #2196F3, #64B5F6);
+  }
+
+  .status-transito {
+    background: linear-gradient(90deg, #FF9800, #FFB74D);
+  }
+
+  .status-entregue {
+    background: linear-gradient(90deg, #4CAF50, #66BB6A);
+  }
+
+  .status-value {
+    text-align: right;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .top-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .top-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
+    background: #f9f9f9;
+    border-radius: 6px;
+  }
+
+  .top-rank {
+    width: 32px;
+    height: 32px;
+    background: #4CAF50;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+  }
+
+  .top-info {
+    flex: 1;
+  }
+
+  .top-info strong {
+    display: block;
+    color: #333;
+  }
+
+  .top-info small {
+    color: #666;
+    font-size: 12px;
+  }
+
+  .doacoes-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .doacoes-table th {
+    background: #f5f5f5;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #e0e0e0;
+  }
+
+  .doacoes-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .status-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    display: inline-block;
+  }
+
+  .status-badge.status-pendente {
+    background: #FFF3E0;
+    color: #F57C00;
+  }
+
+  .status-badge.status-confirmada {
+    background: #E3F2FD;
+    color: #1976D2;
+  }
+
+  .status-badge.status-em_transito {
+    background: #FFF3E0;
+    color: #F57C00;
+  }
+
+  .status-badge.status-entregue {
+    background: #C8E6C9;
+    color: #2E7D32;
+  }
+
+  .empty-message {
+    text-align: center;
+    color: #999;
+    padding: 20px;
+  }
+</style>
+{% endblock %}

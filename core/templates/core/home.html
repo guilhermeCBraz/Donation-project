@@ -1,0 +1,112 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Home - Donation Project{% endblock %}
+
+{% block content %}
+<style>
+  .hero {
+    text-align: center;
+    padding: 4rem 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px;
+    margin-bottom: 3rem;
+  }
+
+  .hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .hero p {
+    font-size: 1.3rem;
+    margin-bottom: 2rem;
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+  }
+
+  .hero-buttons a {
+    padding: 1rem 2rem;
+    background: white;
+    color: #667eea;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s;
+  }
+
+  .hero-buttons a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+
+  .feature-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  }
+
+  .feature-card .icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .feature-card h3 {
+    color: #667eea;
+    margin-bottom: 1rem;
+  }
+
+  .feature-card p {
+    color: #666;
+    line-height: 1.6;
+  }
+</style>
+
+<div class="hero">
+  <h1>� Bem-vindo ao Donation Project</h1>
+  <p>Conectando pessoas generosas com ONGs que precisam de alimentos</p>
+  <div class="hero-buttons">
+    <a href="{% url 'core:login' %}">Fazer Login</a>
+    <a href="{% url 'core:register' %}">Cadastre-se Grátis</a>
+  </div>
+</div>
+
+<div class="features">
+  <div class="feature-card">
+    <div class="icon">🤝</div>
+    <h3>Conecte-se com ONGs</h3>
+    <p>Veja quais ONGs precisam de ajuda e que tipo de alimentos estão necessitando.</p>
+  </div>
+
+  <div class="feature-card">
+    <div class="icon">🎯</div>
+    <h3>Doações Direcionadas</h3>
+    <p>Doe exatamente o que as ONGs precisam. Suas doações fazem a diferença!</p>
+  </div>
+
+  <div class="feature-card">
+    <div class="icon">📊</div>
+    <h3>Acompanhe seu Impacto</h3>
+    <p>Veja o histórico de suas doações e saiba como está ajudando.</p>
+  </div>
+
+  <div class="feature-card">
+    <div class="icon">🏢</div>
+    <h3>Para ONGs</h3>
+    <p>Cadastre sua ONG, informe suas necessidades e receba doações.</p>
+  </div>
+</div>
+{% endblock %}

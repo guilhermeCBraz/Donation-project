@@ -1,0 +1,144 @@
+{% extends "core/base.html" %}
+
+{% block title %}Adicionar Necessidade - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="form-container">
+    <h1>Adicionar Nova Necessidade</h1>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="alimento">Alimento *</label>
+        <select name="alimento" id="alimento" required>
+          <option value="">Selecione um alimento</option>
+          {% for alimento in alimentos %}
+          <option value="{{ alimento.id }}">{{ alimento.nome }} ({{ alimento.categoria.nome }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="quantidade_necessaria">Quantidade Necessária *</label>
+        <input type="number" name="quantidade_necessaria" id="quantidade_necessaria" step="0.01" min="0.01" required>
+        <small>A unidade de medida será definida pelo alimento selecionado</small>
+      </div>
+
+      <div class="form-group">
+        <label for="prioridade">Prioridade *</label>
+        <select name="prioridade" id="prioridade" required>
+          <option value="baixa">Baixa</option>
+          <option value="media" selected>Média</option>
+          <option value="alta">Alta</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="observacoes">Observações</label>
+        <textarea name="observacoes" id="observacoes" rows="4"
+          placeholder="Informações adicionais sobre esta necessidade (opcional)"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <a href="{% url 'core:gerenciar_necessidades_ong' %}" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn">Adicionar Necessidade</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  .form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .form-container h1 {
+    margin-bottom: 30px;
+    color: #333;
+  }
+
+  .form-group {
+    margin-bottom: 25px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+  }
+
+  .form-group small {
+    display: block;
+    margin-top: 5px;
+    color: #666;
+    font-size: 14px;
+  }
+
+  .form-group textarea {
+    resize: vertical;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    margin-top: 30px;
+  }
+
+  .btn-secondary {
+    background: #757575;
+    color: white;
+    text-decoration: none;
+  }
+
+  .btn-secondary:hover {
+    background: #616161;
+  }
+</style>
+
+<script>
+  // Update unit hint when alimento is selected
+  const alimentosData = {
+        {% for alimento in alimentos %}
+  "{{ alimento.id }}": "{{ alimento.unidade_medida }}"{% if not forloop.last %}, {% endif %}
+  {% endfor %}
+    };
+
+  document.getElementById('alimento').addEventListener('change', function () {
+    const selectedId = this.value;
+    const quantidadeInput = document.getElementById('quantidade_necessaria');
+
+    if (selectedId && alimentosData[selectedId]) {
+      quantidadeInput.placeholder = `Quantidade em ${alimentosData[selectedId]}`;
+    } else {
+      quantidadeInput.placeholder = '';
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Dashboard Cliente - Donation Project{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 2rem; color: #333;">🎯 Encontre ONGs e Faça Doações</h1>
+
+<!-- Filtros -->
+<div class="card">
+  <form method="get" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+    <input type="text" name="search" placeholder="Buscar ONG ou alimento..." value="{{ search }}"
+      style="flex: 1; min-width: 250px;">
+    <select name="categoria" style="min-width: 200px;">
+      <option value="">Todas as Categorias</option>
+      {% for cat in categorias %}
+      <option value="{{ cat.id }}">{{ cat.nome }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn-primary">Buscar</button>
+  </form>
+</div>
+
+<!-- Minhas Doações Recentes -->
+{% if minhas_doacoes %}
+<div class="card">
+  <h2>📦 Minhas Últimas Doações</h2>
+  <div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="background: #f5f7fa;">
+          <th style="padding: 1rem; text-align: left;">ONG</th>
+          <th style="padding: 1rem; text-align: left;">Alimento</th>
+          <th style="padding: 1rem; text-align: left;">Quantidade</th>
+          <th style="padding: 1rem; text-align: left;">Status</th>
+          <th style="padding: 1rem; text-align: left;">Data</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doacao in minhas_doacoes %}
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 1rem;">{{ doacao.ong.nome }}</td>
+          <td style="padding: 1rem;">{{ doacao.alimento.nome }}</td>
+          <td style="padding: 1rem;">{{ doacao.quantidade }} {{ doacao.alimento.get_unidade_medida_display }}</td>
+          <td style="padding: 1rem;">
+            <span class="badge badge-info">{{ doacao.get_status_display }}</span>
+          </td>
+          <td style="padding: 1rem;">{{ doacao.data_doacao|date:"d/m/Y H:i" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <a href="{% url 'core:minhas_doacoes' %}" style="display: inline-block; margin-top: 1rem; color: #667eea;">
+    Ver todas →
+  </a>
+</div>
+{% endif %}
+
+<!-- Lista de Necessidades -->
+<div class="card">
+  <h2>🍎 Necessidades de Alimentos das ONGs</h2>
+
+  {% if necessidades %}
+  <div class="grid">
+    {% for nec in necessidades %}
+    <div class="card" style="border: 2px solid #eee;">
+      <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+        <div>
+          <h3 style="color: #667eea; margin-bottom: 0.5rem;">
+            {{ nec.alimento.nome }}
+          </h3>
+          <p style="color: #666; font-size: 0.9rem;">
+            <strong>{{ nec.ong.nome }}</strong>
+          </p>
+        </div>
+        {% if nec.prioridade == 'urgente' %}
+        <span class="badge badge-danger">Urgente!</span>
+        {% elif nec.prioridade == 'alta' %}
+        <span class="badge badge-warning">Alta</span>
+        {% elif nec.prioridade == 'media' %}
+        <span class="badge badge-info">Média</span>
+        {% else %}
+        <span class="badge">Baixa</span>
+        {% endif %}
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+          <span>Necessário:</span>
+          <strong>{{ nec.quantidade_necessaria }} {{ nec.alimento.get_unidade_medida_display }}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+          <span>Recebido:</span>
+          <strong>{{ nec.quantidade_recebida }} {{ nec.alimento.get_unidade_medida_display }}</strong>
+        </div>
+        <div style="background: #f0f0f0; height: 10px; border-radius: 5px; overflow: hidden;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                    height: 100%; width: {{ nec.percentual_recebido }}%;"></div>
+        </div>
+        <p style="text-align: center; margin-top: 0.3rem; font-size: 0.85rem; color: #666;">
+          {{ nec.percentual_recebido|floatformat:0 }}% atingido
+        </p>
+      </div>
+
+      {% if nec.observacoes %}
+      <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem; font-style: italic;">
+        "{{ nec.observacoes }}"
+      </p>
+      {% endif %}
+
+      <div style="display: flex; gap: 0.5rem;">
+        <a href="{% url 'core:doar_alimento' nec.id %}" class="btn-primary"
+          style="flex: 1; text-align: center; text-decoration: none;">
+          Doar Agora
+        </a>
+        <a href="{% url 'core:ong_detalhes' nec.ong.id %}" class="btn-secondary" style="text-decoration: none;">
+          Ver ONG
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p style="text-align: center; color: #666; padding: 2rem;">
+    Nenhuma necessidade encontrada no momento.
+  </p>
+  {% endif %}
+</div>
+
+<!-- Lista de ONGs -->
+<div class="card">
+  <h2>🏢 ONGs Cadastradas</h2>
+
+  {% if ongs %}
+  <div class="grid">
+    {% for ong in ongs %}
+    <div class="card" style="border: 2px solid #eee;">
+      {% if ong.foto %}
+      <img src="{{ ong.foto.url }}" alt="{{ ong.nome }}"
+        style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+      {% endif %}
+
+      <h3 style="color: #667eea; margin-bottom: 0.5rem;">{{ ong.nome }}</h3>
+      <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">
+        {{ ong.descricao|truncatewords:20 }}
+      </p>
+
+      <div style="font-size: 0.85rem; color: #666; margin-bottom: 1rem;">
+        <p>📞 {{ ong.telefone_contato }}</p>
+        <p>📧 {{ ong.email_contato }}</p>
+        <p>👤 {{ ong.responsavel }}</p>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span class="badge badge-info">
+          {{ ong.necessidades.count }} necessidade(s)
+        </span>
+        <a href="{% url 'core:ong_detalhes' ong.id %}" class="btn-primary"
+          style="text-decoration: none; padding: 0.5rem 1rem;">
+          Ver Detalhes
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p style="text-align: center; color: #666; padding: 2rem;">
+    Nenhuma ONG cadastrada no momento.
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

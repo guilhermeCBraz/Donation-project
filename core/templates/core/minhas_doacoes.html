@@ -1,0 +1,97 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Minhas Doações - Donation Project{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 2rem; color: #333;">📦 Minhas Doações</h1>
+
+<div class="card">
+  {% if doacoes %}
+  <div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="background: #f5f7fa;">
+          <th style="padding: 1rem; text-align: left;">ONG</th>
+          <th style="padding: 1rem; text-align: left;">Alimento</th>
+          <th style="padding: 1rem; text-align: left;">Quantidade</th>
+          <th style="padding: 1rem; text-align: left;">Status</th>
+          <th style="padding: 1rem; text-align: left;">Data</th>
+          <th style="padding: 1rem; text-align: left;">Mensagem</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doacao in doacoes %}
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 1rem;">
+            <strong>{{ doacao.ong.nome }}</strong><br>
+            <small style="color: #666;">{{ doacao.ong.responsavel }}</small>
+          </td>
+          <td style="padding: 1rem;">{{ doacao.alimento.nome }}</td>
+          <td style="padding: 1rem;">
+            <strong>{{ doacao.quantidade }} {{ doacao.alimento.get_unidade_medida_display }}</strong>
+          </td>
+          <td style="padding: 1rem;">
+            {% if doacao.status == 'entregue' %}
+            <span class="badge badge-success">{{ doacao.get_status_display }}</span>
+            {% elif doacao.status == 'cancelada' %}
+            <span class="badge badge-danger">{{ doacao.get_status_display }}</span>
+            {% elif doacao.status == 'confirmada' or doacao.status == 'em_transito' %}
+            <span class="badge badge-info">{{ doacao.get_status_display }}</span>
+            {% else %}
+            <span class="badge badge-warning">{{ doacao.get_status_display }}</span>
+            {% endif %}
+          </td>
+          <td style="padding: 1rem;">
+            {{ doacao.data_doacao|date:"d/m/Y" }}<br>
+            <small style="color: #666;">{{ doacao.data_doacao|date:"H:i" }}</small>
+          </td>
+          <td style="padding: 1rem;">
+            {% if doacao.mensagem %}
+            <span style="font-style: italic; color: #666;">
+              "{{ doacao.mensagem|truncatewords:15 }}"
+            </span>
+            {% else %}
+            <span style="color: #999;">-</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top: 2rem; padding: 1.5rem; background: #f5f7fa; border-radius: 10px;">
+    <h3 style="color: #333; margin-bottom: 1rem;">📊 Resumo</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+      <div style="text-align: center;">
+        <p style="color: #666; font-size: 0.9rem;">Total de Doações</p>
+        <p style="font-size: 2rem; font-weight: bold; color: #667eea;">{{ doacoes.count }}</p>
+      </div>
+      <div style="text-align: center;">
+        <p style="color: #666; font-size: 0.9rem;">Entregues</p>
+        <p style="font-size: 2rem; font-weight: bold; color: #10b981;">
+          {{ doacoes|length }}
+        </p>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div style="text-align: center; padding: 4rem 2rem;">
+    <div style="font-size: 4rem; margin-bottom: 1rem;">📭</div>
+    <h3 style="color: #666; margin-bottom: 1rem;">Você ainda não fez nenhuma doação</h3>
+    <p style="color: #999; margin-bottom: 2rem;">
+      Comece agora a fazer a diferença!
+    </p>
+    <a href="{% url 'core:dashboard_cliente' %}" class="btn-primary" style="text-decoration: none;">
+      Ver ONGs e Necessidades
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<div style="margin-top: 2rem; text-align: center;">
+  <a href="{% url 'core:dashboard_cliente' %}" class="btn-secondary" style="text-decoration: none;">
+    ← Voltar ao Dashboard
+  </a>
+</div>
+{% endblock %}

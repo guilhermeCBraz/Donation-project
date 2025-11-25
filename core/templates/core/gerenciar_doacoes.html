@@ -1,0 +1,171 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Gerenciar Doações - {{ ong.nome }}{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 2rem; color: #333;">📦 Gerenciar Doações Recebidas</h1>
+
+<!-- Estatísticas -->
+<div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 2rem;">
+  <div class="card" style="text-align: center; background: #fff3cd; border: 2px solid #ffc107;">
+    <h3 style="font-size: 2rem; margin-bottom: 0.5rem; color: #856404;">{{ stats.pendente }}</h3>
+    <p style="color: #856404; font-weight: 600;">Pendentes</p>
+  </div>
+  <div class="card" style="text-align: center; background: #d1ecf1; border: 2px solid #17a2b8;">
+    <h3 style="font-size: 2rem; margin-bottom: 0.5rem; color: #0c5460;">{{ stats.confirmada }}</h3>
+    <p style="color: #0c5460; font-weight: 600;">Confirmadas</p>
+  </div>
+  <div class="card" style="text-align: center; background: #e7f3ff; border: 2px solid #007bff;">
+    <h3 style="font-size: 2rem; margin-bottom: 0.5rem; color: #004085;">{{ stats.em_transito }}</h3>
+    <p style="color: #004085; font-weight: 600;">Em Trânsito</p>
+  </div>
+  <div class="card" style="text-align: center; background: #d4edda; border: 2px solid #28a745;">
+    <h3 style="font-size: 2rem; margin-bottom: 0.5rem; color: #155724;">{{ stats.entregue }}</h3>
+    <p style="color: #155724; font-weight: 600;">Entregues</p>
+  </div>
+  <div class="card" style="text-align: center; background: #f8d7da; border: 2px solid #dc3545;">
+    <h3 style="font-size: 2rem; margin-bottom: 0.5rem; color: #721c24;">{{ stats.cancelada }}</h3>
+    <p style="color: #721c24; font-weight: 600;">Canceladas</p>
+  </div>
+</div>
+
+<!-- Filtros -->
+<div class="card">
+  <form method="get" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+    <label style="font-weight: 600;">Filtrar por status:</label>
+    <select name="status" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+      <option value="">Todos</option>
+      <option value="pendente" {% if status_filter=='pendente' %}selected{% endif %}>Pendente</option>
+      <option value="confirmada" {% if status_filter=='confirmada' %}selected{% endif %}>Confirmada</option>
+      <option value="em_transito" {% if status_filter=='em_transito' %}selected{% endif %}>Em Trânsito</option>
+      <option value="entregue" {% if status_filter=='entregue' %}selected{% endif %}>Entregue</option>
+      <option value="cancelada" {% if status_filter=='cancelada' %}selected{% endif %}>Cancelada</option>
+    </select>
+    <button type="submit" class="btn-primary">Filtrar</button>
+    {% if status_filter %}
+    <a href="{% url 'core:gerenciar_doacoes_ong' %}" class="btn-secondary" style="text-decoration: none;">
+      Limpar Filtro
+    </a>
+    {% endif %}
+  </form>
+</div>
+
+<!-- Lista de Doações -->
+<div class="card">
+  <h2>📋 Doações Recebidas</h2>
+
+  {% if doacoes %}
+  <div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="background: #f5f7fa;">
+          <th style="padding: 1rem; text-align: left;">Doador</th>
+          <th style="padding: 1rem; text-align: left;">Alimento</th>
+          <th style="padding: 1rem; text-align: left;">Quantidade</th>
+          <th style="padding: 1rem; text-align: left;">Data</th>
+          <th style="padding: 1rem; text-align: left;">Status Atual</th>
+          <th style="padding: 1rem; text-align: left;">Atualizar Status</th>
+          <th style="padding: 1rem; text-align: left;">Mensagem</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doacao in doacoes %}
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 1rem;">
+            <strong>{{ doacao.doador.first_name }} {{ doacao.doador.last_name }}</strong><br>
+            <small style="color: #666;">{{ doacao.doador.username }}</small>
+          </td>
+          <td style="padding: 1rem;">{{ doacao.alimento.nome }}</td>
+          <td style="padding: 1rem;">
+            <strong style="color: #667eea;">{{ doacao.quantidade }} {{ doacao.alimento.get_unidade_medida_display
+              }}</strong>
+          </td>
+          <td style="padding: 1rem;">
+            {{ doacao.data_doacao|date:"d/m/Y" }}<br>
+            <small style="color: #666;">{{ doacao.data_doacao|date:"H:i" }}</small>
+          </td>
+          <td style="padding: 1rem;">
+            {% if doacao.status == 'pendente' %}
+            <span class="badge badge-warning">{{ doacao.get_status_display }}</span>
+            {% elif doacao.status == 'confirmada' %}
+            <span class="badge badge-info">{{ doacao.get_status_display }}</span>
+            {% elif doacao.status == 'em_transito' %}
+            <span class="badge" style="background: #e7f3ff; color: #004085;">{{ doacao.get_status_display }}</span>
+            {% elif doacao.status == 'entregue' %}
+            <span class="badge badge-success">{{ doacao.get_status_display }}</span>
+            {% else %}
+            <span class="badge badge-danger">{{ doacao.get_status_display }}</span>
+            {% endif %}
+          </td>
+          <td style="padding: 1rem;">
+            {% if doacao.status != 'entregue' and doacao.status != 'cancelada' %}
+            <form method="post" action="{% url 'core:atualizar_status_doacao' doacao.id %}" style="display: inline;">
+              {% csrf_token %}
+              <select name="status"
+                style="padding: 0.4rem; border: 1px solid #ddd; border-radius: 5px; font-size: 0.9rem;">
+                <option value="">Selecione...</option>
+                {% if doacao.status == 'pendente' %}
+                <option value="confirmada">✓ Confirmar</option>
+                <option value="cancelada">✗ Cancelar</option>
+                {% elif doacao.status == 'confirmada' %}
+                <option value="em_transito">🚚 Em Trânsito</option>
+                <option value="cancelada">✗ Cancelar</option>
+                {% elif doacao.status == 'em_transito' %}
+                <option value="entregue">✅ Entregue</option>
+                {% endif %}
+              </select>
+              <button type="submit" class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">
+                Atualizar
+              </button>
+            </form>
+            {% else %}
+            <span style="color: #999; font-size: 0.9rem;">-</span>
+            {% endif %}
+          </td>
+          <td style="padding: 1rem;">
+            {% if doacao.mensagem %}
+            <details>
+              <summary style="cursor: pointer; color: #667eea;">Ver mensagem</summary>
+              <p style="margin-top: 0.5rem; font-style: italic; color: #666;">
+                "{{ doacao.mensagem }}"
+              </p>
+            </details>
+            {% else %}
+            <span style="color: #999;">-</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top: 2rem; padding: 1rem; background: #f5f7fa; border-radius: 10px;">
+    <h4 style="color: #333; margin-bottom: 0.5rem;">ℹ️ Como funciona:</h4>
+    <ul style="color: #666; line-height: 1.8;">
+      <li><strong>Pendente</strong> → Doação recebida, aguardando confirmação da ONG</li>
+      <li><strong>Confirmada</strong> → ONG confirmou e vai receber a doação</li>
+      <li><strong>Em Trânsito</strong> → Doação está a caminho</li>
+      <li><strong>Entregue</strong> → Doação recebida! (atualiza automaticamente a quantidade recebida)</li>
+      <li><strong>Cancelada</strong> → Doação não pôde ser realizada</li>
+    </ul>
+  </div>
+  {% else %}
+  <div style="text-align: center; padding: 3rem;">
+    <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
+    <h3 style="color: #666;">Nenhuma doação encontrada</h3>
+    {% if status_filter %}
+    <p style="color: #999; margin-top: 1rem;">
+      Tente limpar o filtro para ver todas as doações.
+    </p>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<div style="margin-top: 2rem; text-align: center;">
+  <a href="{% url 'core:dashboard_ong' %}" class="btn-secondary" style="text-decoration: none;">
+    ← Voltar ao Dashboard
+  </a>
+</div>
+{% endblock %}

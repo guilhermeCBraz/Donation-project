@@ -1,0 +1,129 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ ong.nome }} - Donation Project{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 900px; margin: 2rem auto;">
+  <!-- Header da ONG -->
+  <div style="text-align: center; margin-bottom: 2rem;">
+    {% if ong.foto %}
+    <img src="{{ ong.foto.url }}" alt="{{ ong.nome }}"
+      style="width: 200px; height: 200px; object-fit: cover; border-radius: 50%; margin-bottom: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+    {% else %}
+    <div style="width: 200px; height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                    border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center;
+                    font-size: 4rem; color: white;">
+      🏢
+    </div>
+    {% endif %}
+
+    <h1 style="color: #667eea; margin-bottom: 0.5rem;">{{ ong.nome }}</h1>
+    <p style="color: #666; font-size: 1.1rem;">{{ ong.descricao }}</p>
+  </div>
+
+  <!-- Informações de Contato -->
+  <div style="background: #f5f7fa; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem;">
+    <h3 style="color: #333; margin-bottom: 1rem;">📞 Informações de Contato</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+      <div>
+        <p style="color: #666; font-size: 0.9rem;">Responsável</p>
+        <p style="font-weight: bold;">{{ ong.responsavel }}</p>
+      </div>
+      <div>
+        <p style="color: #666; font-size: 0.9rem;">Telefone</p>
+        <p style="font-weight: bold;">{{ ong.telefone_contato }}</p>
+      </div>
+      <div>
+        <p style="color: #666; font-size: 0.9rem;">Email</p>
+        <p style="font-weight: bold;">{{ ong.email_contato }}</p>
+      </div>
+      <div>
+        <p style="color: #666; font-size: 0.9rem;">CNPJ</p>
+        <p style="font-weight: bold;">{{ ong.cnpj }}</p>
+      </div>
+    </div>
+    <div style="margin-top: 1rem;">
+      <p style="color: #666; font-size: 0.9rem;">Endereço</p>
+      <p style="font-weight: bold;">{{ ong.endereco_completo }}</p>
+    </div>
+  </div>
+
+  <!-- Necessidades -->
+  <div>
+    <h2 style="color: #333; margin-bottom: 1.5rem;">🍎 Necessidades de Alimentos</h2>
+
+    {% if necessidades %}
+    <div class="grid">
+      {% for nec in necessidades %}
+      <div class="card" style="border: 2px solid #eee;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+          <div>
+            <h3 style="color: #667eea; margin-bottom: 0.5rem;">
+              {{ nec.alimento.nome }}
+            </h3>
+            <p style="color: #666; font-size: 0.9rem;">
+              {{ nec.alimento.get_unidade_medida_display }}
+            </p>
+          </div>
+          {% if nec.prioridade == 'urgente' %}
+          <span class="badge badge-danger">Urgente!</span>
+          {% elif nec.prioridade == 'alta' %}
+          <span class="badge badge-warning">Alta</span>
+          {% elif nec.prioridade == 'media' %}
+          <span class="badge badge-info">Média</span>
+          {% else %}
+          <span class="badge">Baixa</span>
+          {% endif %}
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+            <span>Necessário:</span>
+            <strong>{{ nec.quantidade_necessaria }} {{ nec.alimento.get_unidade_medida_display }}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+            <span>Recebido:</span>
+            <strong>{{ nec.quantidade_recebida }} {{ nec.alimento.get_unidade_medida_display }}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: #e74c3c;">
+            <span>Faltam:</span>
+            <strong>{{ nec.quantidade_faltante }} {{ nec.alimento.get_unidade_medida_display }}</strong>
+          </div>
+
+          <div style="background: #f0f0f0; height: 10px; border-radius: 5px; overflow: hidden; margin-top: 1rem;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                        height: 100%; width: {{ nec.percentual_recebido }}%;"></div>
+          </div>
+          <p style="text-align: center; margin-top: 0.3rem; font-size: 0.85rem; color: #666;">
+            {{ nec.percentual_recebido|floatformat:0 }}% atingido
+          </p>
+        </div>
+
+        {% if nec.observacoes %}
+        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem; font-style: italic; 
+                              background: #f5f7fa; padding: 0.75rem; border-radius: 5px;">
+          "{{ nec.observacoes }}"
+        </p>
+        {% endif %}
+
+        <a href="{% url 'core:doar_alimento' nec.id %}" class="btn-primary"
+          style="width: 100%; text-align: center; text-decoration: none; display: block;">
+          Doar Agora
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="text-align: center; color: #666; padding: 2rem; background: #f5f7fa; border-radius: 10px;">
+      Esta ONG ainda não cadastrou necessidades de alimentos.
+    </p>
+    {% endif %}
+  </div>
+</div>
+
+<div style="text-align: center; margin-top: 2rem;">
+  <a href="{% url 'core:dashboard_cliente' %}" class="btn-secondary" style="text-decoration: none;">
+    ← Voltar ao Dashboard
+  </a>
+</div>
+{% endblock %}

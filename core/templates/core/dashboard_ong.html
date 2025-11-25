@@ -1,0 +1,181 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Dashboard ONG - Donation Project{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 2rem; color: #333;">🏢 Painel da ONG: {{ ong.nome }}</h1>
+
+<!-- Estatísticas -->
+<div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 2rem;">
+  <div class="card"
+    style="text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+    <h3 style="font-size: 2.5rem; margin-bottom: 0.5rem;">{{ total_doacoes }}</h3>
+    <p>Doações Recebidas</p>
+  </div>
+  <div class="card"
+    style="text-align: center; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+    <h3 style="font-size: 2.5rem; margin-bottom: 0.5rem;">{{ total_alimentos|floatformat:0 }}</h3>
+    <p>Total de Alimentos (kg/un)</p>
+  </div>
+  <div class="card"
+    style="text-align: center; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">
+    <h3 style="font-size: 2.5rem; margin-bottom: 0.5rem;">{{ necessidades.count }}</h3>
+    <p>Necessidades Ativas</p>
+  </div>
+</div>
+
+<!-- Necessidades da ONG -->
+<div class="card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <h2>📋 Nossas Necessidades</h2>
+    <a href="{% url 'core:gerenciar_necessidades_ong' %}" class="btn-primary" style="text-decoration: none;">
+      Gerenciar Necessidades
+    </a>
+  </div>
+
+  {% if necessidades %}
+  <div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="background: #f5f7fa;">
+          <th style="padding: 1rem; text-align: left;">Alimento</th>
+          <th style="padding: 1rem; text-align: left;">Necessário</th>
+          <th style="padding: 1rem; text-align: left;">Recebido</th>
+          <th style="padding: 1rem; text-align: left;">Progresso</th>
+          <th style="padding: 1rem; text-align: left;">Prioridade</th>
+          <th style="padding: 1rem; text-align: left;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for nec in necessidades %}
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 1rem;">
+            <strong>{{ nec.alimento.nome }}</strong><br>
+            <small style="color: #666;">{{ nec.alimento.get_unidade_medida_display }}</small>
+          </td>
+          <td style="padding: 1rem;">{{ nec.quantidade_necessaria }}</td>
+          <td style="padding: 1rem;">{{ nec.quantidade_recebida }}</td>
+          <td style="padding: 1rem;">
+            <div style="width: 100px; background: #f0f0f0; height: 10px; border-radius: 5px; overflow: hidden;">
+              <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                            height: 100%; width: {{ nec.percentual_recebido }}%;"></div>
+            </div>
+            <small style="color: #666;">{{ nec.percentual_recebido|floatformat:0 }}%</small>
+          </td>
+          <td style="padding: 1rem;">
+            {% if nec.prioridade == 'urgente' %}
+            <span class="badge badge-danger">Urgente</span>
+            {% elif nec.prioridade == 'alta' %}
+            <span class="badge badge-warning">Alta</span>
+            {% elif nec.prioridade == 'media' %}
+            <span class="badge badge-info">Média</span>
+            {% else %}
+            <span class="badge">Baixa</span>
+            {% endif %}
+          </td>
+          <td style="padding: 1rem;">
+            {% if nec.ativa %}
+            <span class="badge badge-success">Ativa</span>
+            {% else %}
+            <span class="badge">Inativa</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p style="text-align: center; color: #666; padding: 2rem;">
+    Você ainda não cadastrou nenhuma necessidade.
+    <a href="/admin/core/necessidadealimento/add/" style="color: #667eea;">Clique aqui para adicionar</a>
+  </p>
+  {% endif %}
+</div>
+
+<!-- Doações Recebidas -->
+<div class="card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <h2>🎁 Doações Recebidas Recentemente</h2>
+    <a href="{% url 'core:gerenciar_doacoes_ong' %}" class="btn-primary" style="text-decoration: none;">
+      Gerenciar Todas as Doações
+    </a>
+  </div>
+
+  {% if doacoes_recebidas %}
+  <div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="background: #f5f7fa;">
+          <th style="padding: 1rem; text-align: left;">Doador</th>
+          <th style="padding: 1rem; text-align: left;">Alimento</th>
+          <th style="padding: 1rem; text-align: left;">Quantidade</th>
+          <th style="padding: 1rem; text-align: left;">Status</th>
+          <th style="padding: 1rem; text-align: left;">Data</th>
+          <th style="padding: 1rem; text-align: left;">Mensagem</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doacao in doacoes_recebidas %}
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 1rem;">
+            {{ doacao.doador.first_name }} {{ doacao.doador.last_name }}
+          </td>
+          <td style="padding: 1rem;">{{ doacao.alimento.nome }}</td>
+          <td style="padding: 1rem;">
+            {{ doacao.quantidade }} {{ doacao.alimento.get_unidade_medida_display }}
+          </td>
+          <td style="padding: 1rem;">
+            <span class="badge badge-info">{{ doacao.get_status_display }}</span>
+          </td>
+          <td style="padding: 1rem;">{{ doacao.data_doacao|date:"d/m/Y H:i" }}</td>
+          <td style="padding: 1rem;">
+            {% if doacao.mensagem %}
+            <span style="font-style: italic; color: #666;">"{{ doacao.mensagem|truncatewords:10 }}"</span>
+            {% else %}
+            <span style="color: #999;">-</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p style="text-align: center; color: #666; padding: 2rem;">
+    Nenhuma doação recebida ainda.
+  </p>
+  {% endif %}
+</div>
+
+<!-- Informações da ONG -->
+<div class="card">
+  <h2>ℹ️ Informações da ONG</h2>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+    <div>
+      <p style="color: #666; margin-bottom: 0.3rem;">CNPJ:</p>
+      <p style="font-weight: bold;">{{ ong.cnpj }}</p>
+    </div>
+    <div>
+      <p style="color: #666; margin-bottom: 0.3rem;">Responsável:</p>
+      <p style="font-weight: bold;">{{ ong.responsavel }}</p>
+    </div>
+    <div>
+      <p style="color: #666; margin-bottom: 0.3rem;">Telefone:</p>
+      <p style="font-weight: bold;">{{ ong.telefone_contato }}</p>
+    </div>
+    <div>
+      <p style="color: #666; margin-bottom: 0.3rem;">Email:</p>
+      <p style="font-weight: bold;">{{ ong.email_contato }}</p>
+    </div>
+  </div>
+  <div style="margin-top: 1rem;">
+    <p style="color: #666; margin-bottom: 0.3rem;">Endereço:</p>
+    <p style="font-weight: bold;">{{ ong.endereco_completo }}</p>
+  </div>
+  <a href="/admin/core/ong/{{ ong.id }}/change/" class="btn-secondary"
+    style="text-decoration: none; display: inline-block; margin-top: 1rem;">
+    Editar Informações
+  </a>
+</div>
+{% endblock %}
